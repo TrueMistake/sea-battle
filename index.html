@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<style>
+ /*body{
+        margin: 0;
+        padding: 0;
+    }
+    .slider{
+        width: 600px;
+        position: relative;
+        overflow:hidden;
+        margin: 0 auto;
+    }
+    .slider-wrap{
+        height: 450px;
+    }
+
+    .item{
+        position: absolute;
+        display: none;
+        width: 100%;
+    }
+    .item img{
+        width: 100%;
+    }
+
+    .item:first-child{
+        display:block ;
+    }
+    .item.active{
+        display: block;
+    }
+
+    .slider-wrap{
+
+    }
+
+
+    .slider-left,
+    .slider-right{
+        position: absolute;
+        top: calc(50% - 15px);
+        color: #fff;
+        padding: 10px;
+        background: #000;
+        border: 1px solid #fff;
+        cursor: pointer;
+    }
+    .slider-left{
+        left: 0;
+    }
+    .slider-right{
+        right: 0;
+    }
+
+    .dots{
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+    }
+    .dot{
+        width: 20px;
+        height: 20px;
+        background: #dedede;
+        border-radius: 50%;
+        cursor: pointer;
+    }*/
+
+
+
+    body{
+        background: #000;
+    }
+    #board{
+        position: relative;
+        width: 1024px;
+        height: 863px;
+        margin: auto;
+        background: url('board.jpg') no-repeat;
+    }
+    #messageArea{
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: rgb(83,175,19);
+    }
+    table{
+        position: absolute;
+        left: 173px;
+        top: 98px;
+        border-spacing: 0;
+    }
+    td{
+        width: 94px;
+        height: 94px;
+    }
+    form{
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        padding: 15px;
+        background: rgb(83,175,19);
+    }
+    form input{
+        background: rgb(152,207,113);
+        border-color: rgb(83,175,19);
+        font-size: 1em;
+    }
+    .hit{
+        background: url('ship.png') no-repeat center center;
+    }
+    .miss{
+        background: url('miss.png') no-repeat center center;
+    }
+
+</style>
+<!--<div class="slider">
+    <div class="slider-wrap">
+        <div class="item">
+            <img src="01_1200.jpg" alt="">
+        </div>
+        <div class="item">
+            <img src="05_1200.jpg" alt="">
+        </div>
+        <div class="item">
+            <img src="07_1600.jpg" alt="">
+        </div>
+    </div>
+</div>-->
+
+
+<div id="board">
+    <div id="messageArea"></div>
+    <table>
+        <tr>
+            <td id="00"></td>
+            <td id="01"></td>
+            <td id="02"></td>
+            <td id="03"></td>
+            <td id="04"></td>
+            <td id="05"></td>
+            <td id="06"></td>
+        </tr>
+        <tr>
+            <td id="10"></td>
+            <td id="11"></td>
+            <td id="12"></td>
+            <td id="13" class="hit"></td>
+            <td id="14"></td>
+            <td id="15"></td>
+            <td id="16"></td>
+        </tr>
+        <tr>
+            <td id="20"></td>
+            <td id="21"></td>
+            <td id="22"></td>
+            <td id="23"></td>
+            <td id="24"></td>
+            <td id="25"></td>
+            <td id="26"></td>
+        </tr>
+        <tr>
+            <td id="30"></td>
+            <td id="31"></td>
+            <td id="32"></td>
+            <td id="33"></td>
+            <td id="34"></td>
+            <td id="35"></td>
+            <td id="36"></td>
+        </tr>
+        <tr>
+            <td id="40"></td>
+            <td id="41"></td>
+            <td id="42"></td>
+            <td id="43"></td>
+            <td id="44"></td>
+            <td id="45"></td>
+            <td id="46"></td>
+        </tr>
+        <tr>
+            <td id="50"></td>
+            <td id="51"></td>
+            <td id="52"></td>
+            <td id="53"></td>
+            <td id="54"></td>
+            <td id="55"></td>
+            <td id="56"></td>
+        </tr>
+        <tr>
+            <td id="60"></td>
+            <td id="61"></td>
+            <td id="62"></td>
+            <td id="63"></td>
+            <td id="64"></td>
+            <td id="65"></td>
+            <td id="66"></td>
+        </tr>
+    </table>
+    <form action="">
+        <input type="text" id="guessInput" placeholder="A0">
+        <input type="button" id="fireButton" value="Fire!">
+    </form>
+</div>
+
+<script>
+if (‘serviceWorker’ in navigator) {
+ window.addEventListener(‘load’, function() {  
+   navigator.serviceWorker.register(‘/sw.js’).then(
+     function(registration) {
+       // Registration was successful
+       console.log(‘ServiceWorker registration successful with scope: ‘, registration.scope); },
+     function(err) {
+       // registration failed :(
+       console.log(‘ServiceWorker registration failed: ‘, err);
+     });
+ });
+}
+    var view = {
+        displayMessage: function (msg) {
+            var messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = msg;
+        },
+        displayHit: function (location) {
+            var cell = document.getElementById(location);
+            cell.setAttribute("class", "hit");
+        },
+        displayMiss: function (location) {
+            var cell = document.getElementById(location);
+            cell.setAttribute("class", "miss");
+        }
+    };
+
+
+    var model = {
+        boardSize:7,
+        numShips:3,
+        shipLenght:3,
+        shipsSunk:0,
+        ships: [{locations:["10","20","30"],hits:["","",""]},
+            {locations:["32","33","34"],hits:["","",""]},
+            {locations:["63","64","65"],hits:["","",""]}],
+        fire: function (guess) {
+            for(var i = 0; i < this.numShips; i++){
+                var ship = this.ships[i];
+                var index = ship.locations.indexOf(guess);
+                if(index >= 0){
+                    ship.hits[index] = "hit";
+                    return true;
+                }
+            }
+            return false;
+        },
+        fire: function (guess) {
+            for(var i = 0; i < this.numShips; i++){
+                var ship = this.ships[i];
+                var index = ship.locations.indexOf(guess);
+                if(index >= 0){
+                    ship.hits[index] = "hit";
+                    view.displayHit(guess);
+                    view.displayMessage("HIT!");
+                    if(this.isSunk(ship)){
+                        view.displayMessage("Корабль потоплен!");
+                        this.shipsSunk++;
+                    }
+                    return true;
+                }
+            }
+            view.displayMiss(guess);
+            view.displayMessage("Промах!");
+            return false;
+        },
+        isSunk: function (ship) {
+            for(var i = 0; i < this.shipLenght; i++){
+                if(ship.hits[i] != "hit"){
+                    return false;
+                }
+            }
+            return true;
+        }
+    };
+
+var controller = {
+    guesses = 0,
+    processGuess: function (guess) {
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*function slider() {
+        var slider = document.querySelector('.slider');
+
+        var wrap = document.querySelector('.slider-wrap').children;
+
+
+
+        var item = document.querySelectorAll('.item');
+        var widthAll = 0;
+        var width = 0;
+        var i = 0;
+
+
+
+        /!* Создание кнопок *!/
+        var slider_nav = document.createElement('div');
+        slider_nav.classList.add('slider-nav');
+
+        var left = document.createElement('div');
+        left.classList.add('slider-left');
+        left.innerText = 'Назад';
+
+        var right = document.createElement('div');
+        right.classList.add('slider-right');
+        right.innerText = 'Вперёд';
+
+        var dots = document.createElement('div');
+        dots.classList.add('dots');
+
+        slider.appendChild(slider_nav);
+        slider_nav.appendChild(left);
+        slider_nav.appendChild(right);
+        slider.appendChild(dots);
+
+
+
+        for(var d=0; d < wrap.length; d++){
+            var dot = document.createElement('div');
+            dot.classList.add('dot');
+            dots.appendChild(dot);
+        }
+
+
+        left.addEventListener('click', function () {
+
+
+                wrap[i].classList.remove('active');
+                i--;
+            if(i <0){
+                i=wrap.length-1;
+            }
+
+                wrap[i].classList.add('active');
+
+
+        });
+        right.addEventListener('click', function () {
+
+                wrap[i].classList.remove('active');
+                i++;
+            if(i == wrap.length){
+                i=0;
+            }
+
+                wrap[i].classList.add('active');
+
+
+
+
+        });
+
+
+    }
+    slider();*/
+
+
+
+
+
+</script>
+</body>
+</html>
