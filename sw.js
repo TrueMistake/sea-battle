@@ -10,7 +10,7 @@ self.addEventListener('push', function(event) {
             body: 'Push Message received'
         }));
 });
-/*self.addEventListener('install', function(e) {
+self.addEventListener('install', function(e) {
     e.waitUntil(
         caches.open('the-magic-cache').then(function(cache) {
         });
@@ -33,4 +33,4 @@ self.addEventListener('fetch', function(event) {
             return response || fetch(event.request);
         })
     );
-});*/
+});
