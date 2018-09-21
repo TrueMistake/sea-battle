@@ -1,0 +1,8 @@
+{
+  «имя»: «морское сражение»,
+  «short_name»: «SB»,
+  «lang»: «ru-RU»,
+  «start_url»: «https://truemistake.github.io/sea-battle.github.io/»,
+  "display": "standalone",
+  "gcm_sender_id": "548999494082"
+}
